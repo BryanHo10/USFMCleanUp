@@ -78,25 +78,32 @@ namespace USFMGroom
         }
         private async Task retrieveFileDataParallelAsync()
         {
-            List<Task> tasks = new List<Task>();
+
+            Msg_Runtime.Text = "";
+            List<Task<string>> tasks = new List<Task<string>>();
             foreach (string path in FileFormatList)
             {
                 tasks.Add(Task.Run(() => groomUSFM(path, File.ReadAllText(FolderPath.Text + "\\" + path))));
             }
-
+            var result = await Task.WhenAll(tasks);
+            foreach(var item in result)
+            {
+                Msg_Runtime.Text += item;
+            }
         }
         private void retrieveFileData()
         {
+            Msg_Runtime.Text = "";
             foreach (string path in FileFormatList)
             {
-                groomUSFM(path, File.ReadAllText(FolderPath.Text + "\\" + path));
+                Msg_Runtime.Text += groomUSFM(path, File.ReadAllText(FolderPath.Text + "\\" + path));
             }
 
         }
-        private void groomUSFM(string pathName, string text)
+        private string groomUSFM(string pathName, string text)
         {
 
-
+            var watch = System.Diagnostics.Stopwatch.StartNew();
             string copyText = text;
             do
             {
@@ -113,6 +120,10 @@ namespace USFMGroom
                 Directory.CreateDirectory(FolderPath.Text + "\\newText");
             }
             File.WriteAllText(FolderPath.Text + "\\newText\\" + pathName, copyText);
+
+            watch.Stop();
+            var ellapsedMs = watch.ElapsedMilliseconds;
+            return $"{pathName} execution time: {ellapsedMs} ;{Environment.NewLine}";
         }
 
         private void Btn_Groom_Sync_Click(object sender, EventArgs e)
@@ -127,7 +138,7 @@ namespace USFMGroom
 
             watch.Stop();
             var ellapsedMs = watch.ElapsedMilliseconds;
-            Msg_Runtime.Text += $"Total execution time: {ellapsedMs}{Environment.NewLine}";
+            Msg_Runtime.Text += $" -- Total execution time: {ellapsedMs}{Environment.NewLine}";
             Btn_AddFiles.Enabled = true;
             Btn_Groom.Enabled = true;
             Msg_Complete.Visible = true;
