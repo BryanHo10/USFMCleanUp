@@ -128,12 +128,7 @@ namespace USFMGroom
 
             string copyText = CorrectEndMarkers(text);
 
-
-            if (!Directory.Exists(FolderPath.Text + "\\newText"))
-            {
-                Directory.CreateDirectory(FolderPath.Text + "\\newText");
-            }
-            File.WriteAllText(FolderPath.Text + "\\newText\\" + pathName, copyText);
+            File.WriteAllText(FolderPath.Text + "\\" + pathName, copyText);
 
             watch.Stop();
             var ellapsedMs = watch.ElapsedMilliseconds;
