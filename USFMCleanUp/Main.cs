@@ -55,7 +55,6 @@ namespace USFMGroom
             }
             FolderPath.Text = folderName;
         }
-
         private async void Btn_Groom_Click(object sender, EventArgs e)
         {
             
@@ -75,6 +74,23 @@ namespace USFMGroom
             Btn_Groom.Enabled = true;
             Msg_Complete.Visible = true;
 
+        }
+        private void Btn_Groom_Sync_Click(object sender, EventArgs e)
+        {
+            Btn_AddFiles.Enabled = false;
+            Btn_Groom.Enabled = false;
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+
+
+            retrieveFileData();
+
+
+            watch.Stop();
+            var ellapsedMs = watch.ElapsedMilliseconds;
+            Msg_Runtime.Text += $" -- Total execution time: {ellapsedMs}{Environment.NewLine}";
+            Btn_AddFiles.Enabled = true;
+            Btn_Groom.Enabled = true;
+            Msg_Complete.Visible = true;
         }
         private async Task retrieveFileDataParallelAsync()
         {
@@ -100,10 +116,30 @@ namespace USFMGroom
             }
 
         }
+        /// <summary>
+        /// Handles text correction and file creation
+        /// </summary>
+        /// <param name="pathName"></param>
+        /// <param name="text"></param>
         private string groomUSFM(string pathName, string text)
         {
 
             var watch = System.Diagnostics.Stopwatch.StartNew();
+
+            string copyText = CorrectEndMarkers(text);
+
+            File.WriteAllText(FolderPath.Text + "\\" + pathName, copyText);
+
+            watch.Stop();
+            var ellapsedMs = watch.ElapsedMilliseconds;
+            return $"{pathName} execution time: {ellapsedMs} ;{Environment.NewLine}";
+        }
+        /// <summary>
+        /// Ensures all end markers are isolated from the text; {\f*When => \f* When}
+        /// </summary>
+        /// <param name="text"></param>
+        private string CorrectEndMarkers(string text)
+        {
             string copyText = text;
             do
             {
@@ -114,34 +150,8 @@ namespace USFMGroom
                 }
             } while (endMarkerRegex.Matches(copyText).Count > 0);
 
-
-            if (!Directory.Exists(FolderPath.Text + "\\newText"))
-            {
-                Directory.CreateDirectory(FolderPath.Text + "\\newText");
-            }
-            File.WriteAllText(FolderPath.Text + "\\newText\\" + pathName, copyText);
-
-            watch.Stop();
-            var ellapsedMs = watch.ElapsedMilliseconds;
-            return $"{pathName} execution time: {ellapsedMs} ;{Environment.NewLine}";
+            return copyText;
         }
-
-        private void Btn_Groom_Sync_Click(object sender, EventArgs e)
-        {
-            Btn_AddFiles.Enabled = false;
-            Btn_Groom.Enabled = false;
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-
-
-            retrieveFileData();
-
-
-            watch.Stop();
-            var ellapsedMs = watch.ElapsedMilliseconds;
-            Msg_Runtime.Text += $" -- Total execution time: {ellapsedMs}{Environment.NewLine}";
-            Btn_AddFiles.Enabled = true;
-            Btn_Groom.Enabled = true;
-            Msg_Complete.Visible = true;
-        }
+        
     }
 }
